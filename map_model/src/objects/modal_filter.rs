@@ -13,7 +13,7 @@ pub enum FilterType {
 }
 
 /// A filter placed somewhere along a road
-#[derive(Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct RoadFilter {
     pub dist: Distance,
     pub filter_type: FilterType,

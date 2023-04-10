@@ -10,7 +10,8 @@ use geom::{Distance, PolyLine, Polygon, Speed};
 
 use crate::{
     osm, AccessRestrictions, CommonEndpoint, CrossingType, Direction, DrivingSide, IntersectionID,
-    Lane, LaneID, LaneSpec, LaneType, Map, PathConstraints, RestrictionType, TransitStopID, Zone,
+    Lane, LaneID, LaneSpec, LaneType, Map, PathConstraints, RestrictionType, RoadFilter,
+    TransitStopID, Zone,
 };
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -195,6 +196,9 @@ pub struct Road {
 
     /// Meaningless order
     pub transit_stops: BTreeSet<TransitStopID>,
+
+    /// There's either a modal filter on this road or not
+    pub modal_filter: Option<RoadFilter>,
 
     /// Some kind of modal filter or barrier this distance along center_pts.
     pub barrier_nodes: Vec<Distance>,

@@ -201,6 +201,7 @@ impl EditCmd {
                 let road = &mut map.roads[r.0];
                 road.speed_limit = new.speed_limit;
                 road.access_restrictions = new.access_restrictions.clone();
+                road.modal_filter = new.modal_filter.clone();
 
                 effects.changed_roads.insert(road.id);
                 for i in [road.src_i, road.dst_i] {
