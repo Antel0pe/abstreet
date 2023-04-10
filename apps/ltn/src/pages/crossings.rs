@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
 
 use abstutil::PriorityQueueItem;
 use geom::{Circle, Duration};
-use map_model::{osm, CrossingType, RoadID};
+use map_model::{osm, Crossing, CrossingType, RoadID};
 use widgetry::mapspace::{DrawCustomUnzoomedShapes, ObjectID, PerZoom, World, WorldOutcome};
 use widgetry::{
     lctrl, Color, ControlState, Drawable, EventCtx, GeomBatch, GfxCtx, Key, Line, Outcome, Panel,
@@ -11,7 +11,7 @@ use widgetry::{
 
 use crate::components::{AppwidePanel, BottomPanel, Mode};
 use crate::render::{colors, Toggle3Zoomed};
-use crate::{logic, mut_edits, App, Crossing, Transition};
+use crate::{logic, mut_edits, App, Transition};
 
 pub struct Crossings {
     appwide_panel: AppwidePanel,

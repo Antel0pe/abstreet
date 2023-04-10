@@ -203,7 +203,10 @@ pub struct Road {
     /// Some kind of modal filter or barrier this distance along center_pts.
     pub barrier_nodes: Vec<Distance>,
     /// Some kind of crossing this distance along center_pts.
+    // TODO Just use Crossing directly?
     pub crossing_nodes: Vec<(Distance, CrossingType)>,
+    /// Sorted by increasing distance
+    pub crossings: Vec<Crossing>,
 }
 
 impl Road {
@@ -729,4 +732,12 @@ impl OriginalRoad {
             i2: osm::NodeID(i2),
         }
     }
+}
+
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+pub struct Crossing {
+    pub kind: CrossingType,
+    pub dist: Distance,
+    // TODO Nope, we need to detect from "original" state
+    pub user_modified: bool,
 }

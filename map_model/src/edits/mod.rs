@@ -13,9 +13,9 @@ use osm2streets::get_lane_specs_ltr;
 
 pub use self::perma::PermanentMapEdits;
 use crate::{
-    AccessRestrictions, ControlStopSign, ControlTrafficSignal, DiagonalFilter, IntersectionControl,
-    IntersectionID, LaneID, LaneSpec, Map, MapConfig, ParkingLotID, Road, RoadFilter, RoadID,
-    TransitRouteID, TurnID, TurnType,
+    AccessRestrictions, ControlStopSign, ControlTrafficSignal, Crossing, DiagonalFilter,
+    IntersectionControl, IntersectionID, LaneID, LaneSpec, Map, MapConfig, ParkingLotID, Road,
+    RoadFilter, RoadID, TransitRouteID, TurnID, TurnType,
 };
 
 mod apply;
@@ -82,6 +82,7 @@ pub struct EditRoad {
     pub speed_limit: Speed,
     pub access_restrictions: AccessRestrictions,
     pub modal_filter: Option<RoadFilter>,
+    pub crossings: Vec<Crossing>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -110,6 +111,8 @@ impl EditRoad {
             access_restrictions: r.access_restrictions_from_osm(),
             // TODO Port logic/existing_filters.rs here?
             modal_filter: None,
+            // TODO From crossing_nodes?
+            crossings: Vec::new(),
         }
     }
 
@@ -154,6 +157,9 @@ impl EditRoad {
         }
         if self.modal_filter != other.modal_filter {
             changes.push("modal filter".to_string());
+        }
+        if self.crossings != other.crossings {
+            changes.push("crossings".to_string());
         }
         changes
     }
@@ -325,6 +331,7 @@ impl MapEdits {
             if r.speed_limit != orig.speed_limit
                 || r.access_restrictions != orig.access_restrictions
                 || r.modal_filter != orig.modal_filter
+                || r.crossings != orig.crossings
                 // If a lane was added or deleted, figuring out if any were modified is kind of
                 // unclear -- just mark the entire road.
                 || r.lanes.len() != orig.lanes_ltr.len()
@@ -418,6 +425,7 @@ impl Map {
             speed_limit: r.speed_limit,
             access_restrictions: r.access_restrictions.clone(),
             modal_filter: r.modal_filter.clone(),
+            crossings: r.crossings.clone(),
         }
     }
 

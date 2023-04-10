@@ -59,7 +59,7 @@ pub use crate::objects::modal_filter::{DiagonalFilter, FilterType, RoadFilter};
 pub use crate::objects::movement::{CompressedMovementID, Movement, MovementID};
 pub use crate::objects::parking_lot::{ParkingLot, ParkingLotID};
 pub use crate::objects::road::{
-    DirectedRoadID, OriginalRoad, Road, RoadID, RoadSideID, SideOfRoad,
+    Crossing, DirectedRoadID, OriginalRoad, Road, RoadID, RoadSideID, SideOfRoad,
 };
 pub use crate::objects::stop_signs::{ControlStopSign, RoadWithStopSign};
 pub use crate::objects::traffic_signals::{ControlTrafficSignal, Stage, StageType};

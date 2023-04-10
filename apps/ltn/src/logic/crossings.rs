@@ -1,6 +1,6 @@
-use map_model::Map;
+use map_model::{Crossing, Map};
 
-use crate::{Crossing, Edits};
+use crate::Edits;
 
 pub fn populate_existing_crossings(map: &Map, edits: &mut Edits) {
     // (Don't call before_edit; this transformation happens before the user starts editing

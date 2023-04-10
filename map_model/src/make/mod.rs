@@ -191,6 +191,7 @@ impl Map {
                 modal_filter: None,
                 barrier_nodes,
                 crossing_nodes,
+                crossings: Vec::new(),
             };
             road.speed_limit = road.speed_limit_from_osm();
             road.access_restrictions = road.access_restrictions_from_osm();

@@ -3,9 +3,9 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use abstutil::{deserialize_btreemap, serialize_btreemap};
-use geom::{Angle, Distance, Speed};
+use geom::{Angle, Speed};
 use map_model::{
-    CrossingType, DiagonalFilter, EditRoad, FilterType, IntersectionID, Map, RoadFilter, RoadID,
+    Crossing, DiagonalFilter, EditRoad, FilterType, IntersectionID, Map, RoadFilter, RoadID,
     RoutingParams, TurnID,
 };
 use widgetry::mapspace::{DrawCustomUnzoomedShapes, PerZoom};
@@ -51,13 +51,6 @@ pub struct Edits {
     /// Edit history is preserved recursively
     #[serde(skip_serializing, skip_deserializing)]
     pub previous_version: Box<Option<Edits>>,
-}
-
-#[derive(Clone, PartialEq, Serialize, Deserialize)]
-pub struct Crossing {
-    pub kind: CrossingType,
-    pub dist: Distance,
-    pub user_modified: bool,
 }
 
 /// This logically changes every time an edit occurs. MapName isn't captured here.
