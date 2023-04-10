@@ -205,8 +205,7 @@ impl State<App> for DesignLTN {
                     return Transition::Keep;
                 }
                 EditOutcome::UpdateAll => {
-                    self.neighbourhood
-                        .edits_changed(&app.per_map.map, app.edits());
+                    self.neighbourhood.edits_changed(&app.per_map.map);
                     self.update(ctx, app);
                     return Transition::Keep;
                 }
@@ -222,8 +221,7 @@ impl State<App> for DesignLTN {
                 self.update(ctx, app);
             }
             EditOutcome::UpdateAll => {
-                self.neighbourhood
-                    .edits_changed(&app.per_map.map, app.edits());
+                self.neighbourhood.edits_changed(&app.per_map.map);
                 self.update(ctx, app);
             }
             EditOutcome::Transition(t) => {

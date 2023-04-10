@@ -65,11 +65,7 @@ impl PerMap {
         logic::transform_existing(&mut map, timer);
         let proposals = crate::save::Proposals::new(&map, timer);
 
-        let mut routing_params_before_changes = map.routing_params().clone();
-        proposals
-            .current_proposal
-            .edits
-            .update_routing_params(&mut routing_params_before_changes);
+        let routing_params_before_changes = map.routing_params_respecting_modal_filters();
 
         let draw_all_filters = render::render_modal_filters(ctx, &map);
 

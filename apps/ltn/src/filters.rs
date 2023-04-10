@@ -4,9 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use abstutil::{deserialize_btreemap, serialize_btreemap};
 use geom::Speed;
-use map_model::{
-    Crossing, DiagonalFilter, EditRoad, IntersectionID, RoadFilter, RoadID, RoutingParams, TurnID,
-};
+use map_model::{Crossing, DiagonalFilter, EditRoad, IntersectionID, RoadFilter, RoadID};
 
 /// Stored in App per-map state. Before making any changes, call `before_edit`.
 #[derive(Clone, Default, Serialize, Deserialize)]
@@ -58,23 +56,6 @@ pub struct ChangeKey {
 }
 
 impl Edits {
-    /// Modify RoutingParams to respect these modal filters
-    pub fn update_routing_params(&self, params: &mut RoutingParams) {
-        params.avoid_roads.extend(self.roads.keys().cloned());
-        for filter in self.intersections.values() {
-            params
-                .avoid_movements_between
-                .extend(filter.avoid_movements_between_roads());
-        }
-    }
-
-    pub fn allows_turn(&self, t: TurnID) -> bool {
-        if let Some(filter) = self.intersections.get(&t.parent) {
-            return filter.allows_turn(t.src.road, t.dst.road);
-        }
-        true
-    }
-
     pub fn get_change_key(&self) -> ChangeKey {
         ChangeKey {
             roads: self.roads.clone(),

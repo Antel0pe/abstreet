@@ -21,43 +21,41 @@ pub fn render_modal_filters(ctx: &EventCtx, map: &Map) -> render::Toggle3Zoomed 
         icons.insert(ft, GeomBatch::load_svg(ctx, render::filter_svg_path(ft)));
     }
 
-    for road in map.all_roads() {
-        if let Some(ref filter) = road.modal_filter {
-            let icon = &icons[&filter.filter_type];
-            let rewrite_color = if filter.user_modified {
-                RewriteColor::NoOp
+    for (road, filter) in map.all_roads_with_modal_filter() {
+        let icon = &icons[&filter.filter_type];
+        let rewrite_color = if filter.user_modified {
+            RewriteColor::NoOp
+        } else {
+            RewriteColor::ChangeAlpha(0.7)
+        };
+
+        if let Ok((pt, road_angle)) = road.center_pts.dist_along(filter.dist) {
+            let angle = if filter.filter_type == FilterType::NoEntry {
+                road_angle.rotate_degs(90.0)
             } else {
-                RewriteColor::ChangeAlpha(0.7)
+                Angle::ZERO
             };
 
-            if let Ok((pt, road_angle)) = road.center_pts.dist_along(filter.dist) {
-                let angle = if filter.filter_type == FilterType::NoEntry {
-                    road_angle.rotate_degs(90.0)
-                } else {
-                    Angle::ZERO
-                };
+            batch.append(
+                icon.clone()
+                    .scale_to_fit_width(road.get_width().inner_meters())
+                    .centered_on(pt)
+                    .rotate(angle)
+                    .color(rewrite_color),
+            );
 
+            // TODO Memory intensive
+            let icon = icon.clone();
+            // TODO They can shrink a bit past their map size
+            low_zoom.add_custom(Box::new(move |batch, thickness| {
                 batch.append(
                     icon.clone()
-                        .scale_to_fit_width(road.get_width().inner_meters())
+                        .scale_to_fit_width(30.0 * thickness)
                         .centered_on(pt)
                         .rotate(angle)
                         .color(rewrite_color),
                 );
-
-                // TODO Memory intensive
-                let icon = icon.clone();
-                // TODO They can shrink a bit past their map size
-                low_zoom.add_custom(Box::new(move |batch, thickness| {
-                    batch.append(
-                        icon.clone()
-                            .scale_to_fit_width(30.0 * thickness)
-                            .centered_on(pt)
-                            .rotate(angle)
-                            .color(rewrite_color),
-                    );
-                }));
-            }
+            }));
         }
     }
 

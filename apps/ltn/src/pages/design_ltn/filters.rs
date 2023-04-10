@@ -108,7 +108,9 @@ pub fn handle_world_outcome(
                     new.modal_filter = Some(RoadFilter::new_by_user(distance, filter_type));
                 }));
             }
-            app.per_map.map.must_apply_edits(edits, &mut Timer::throwaway());
+            app.per_map
+                .map
+                .must_apply_edits(edits, &mut Timer::throwaway());
             redraw_all_filters(ctx, app);
             EditOutcome::UpdateAll
         }

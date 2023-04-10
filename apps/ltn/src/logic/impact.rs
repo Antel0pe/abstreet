@@ -103,11 +103,9 @@ impl Impact {
             .iter()
             .map(|m| m.to_constraints())
             .collect();
-        let mut params = app.per_map.map.routing_params().clone();
-        app.edits().update_routing_params(&mut params);
         Pathfinder::new_ch(
             &app.per_map.map,
-            params,
+            app.per_map.map.routing_params_respecting_modal_filters(),
             constraints.into_iter().collect(),
             timer,
         )
