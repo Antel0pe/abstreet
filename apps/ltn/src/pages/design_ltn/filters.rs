@@ -1,11 +1,11 @@
-use map_model::{FilterType, RoadFilter};
+use map_model::{DiagonalFilter, FilterType, RoadFilter};
 use widgetry::mapspace::{World, WorldOutcome};
 use widgetry::tools::open_browser;
 use widgetry::{lctrl, EventCtx, Key, Text, Transition};
 
 use super::{modals, road_name, EditOutcome, Obj};
 use crate::render::colors;
-use crate::{mut_edits, redraw_all_filters, App, DiagonalFilter, Neighbourhood};
+use crate::{mut_edits, redraw_all_filters, App, Neighbourhood};
 
 /// Creates clickable objects for managing filters on roads and intersections. Everything is
 /// invisible; the caller is responsible for drawing things.
@@ -109,7 +109,12 @@ pub fn handle_world_outcome(
         }
         WorldOutcome::ClickedObject(Obj::Intersection(i)) => {
             app.per_map.proposals.before_edit();
-            DiagonalFilter::cycle_through_alternatives(app, i);
+            // TODO This returns commands; apply edits
+            DiagonalFilter::cycle_through_alternatives(
+                &app.per_map.map,
+                i,
+                app.session.filter_type,
+            );
             redraw_all_filters(ctx, app);
             EditOutcome::UpdateAll
         }

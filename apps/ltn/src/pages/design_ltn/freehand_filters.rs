@@ -1,9 +1,9 @@
 use geom::PolyLine;
-use map_model::{FilterType, RoadFilter};
+use map_model::{DiagonalFilter, FilterType, RoadFilter};
 use widgetry::EventCtx;
 
 use super::{modals, EditMode, EditOutcome};
-use crate::{mut_edits, redraw_all_filters, App, DiagonalFilter, Neighbourhood, Transition};
+use crate::{mut_edits, redraw_all_filters, App, Neighbourhood, Transition};
 
 pub fn event(ctx: &mut EventCtx, app: &mut App, neighbourhood: &Neighbourhood) -> EditOutcome {
     if let EditMode::FreehandFilters(ref mut lasso) = app.session.edit_mode {
@@ -75,7 +75,12 @@ fn make_filters_along_path(
     for i in &neighbourhood.interior_intersections {
         if app.per_map.map.get_i(*i).polygon.intersects_polyline(&path) {
             // We probably won't guess the right one, but make an attempt
-            DiagonalFilter::cycle_through_alternatives(app, *i);
+            // TODO This returns commands; apply edits
+            DiagonalFilter::cycle_through_alternatives(
+                &app.per_map.map,
+                *i,
+                app.session.filter_type,
+            );
         }
     }
     redraw_all_filters(ctx, app);
