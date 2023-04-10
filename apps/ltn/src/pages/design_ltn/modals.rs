@@ -2,14 +2,14 @@ use std::collections::BTreeSet;
 
 use geom::{Distance, Polygon};
 use map_gui::tools::grey_out_map;
-use map_model::{EditRoad, RoadID};
+use map_model::{EditRoad, FilterType, RoadID};
 use osm2streets::{Direction, LaneSpec};
 use widgetry::{
     Color, ControlState, DrawBaselayer, EventCtx, GeomBatch, GfxCtx, Key, Line, Outcome, Panel,
     RewriteColor, State, Text, Texture, Toggle, Widget,
 };
 
-use crate::{mut_edits, redraw_all_filters, App, FilterType, RoadFilter, Transition};
+use crate::{mut_edits, redraw_all_filters, render, App, RoadFilter, Transition};
 
 pub struct ResolveOneWayAndFilter {
     panel: Panel,
@@ -181,13 +181,13 @@ impl ChangeFilterType {
         let filter = |ft: FilterType, hotkey: Key, name: &str| {
             ctx.style()
                 .btn_solid_primary
-                .icon_text(ft.svg_path(), name)
+                .icon_text(render::filter_svg_path(ft), name)
                 .image_color(
-                    RewriteColor::Change(ft.hide_color(), Color::CLEAR),
+                    RewriteColor::Change(render::filter_hide_color(ft), Color::CLEAR),
                     ControlState::Default,
                 )
                 .image_color(
-                    RewriteColor::Change(ft.hide_color(), Color::CLEAR),
+                    RewriteColor::Change(render::filter_hide_color(ft), Color::CLEAR),
                     ControlState::Disabled,
                 )
                 .disabled(app.session.filter_type == ft)

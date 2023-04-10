@@ -1,10 +1,10 @@
 use geom::PolyLine;
+use map_model::FilterType;
 use widgetry::EventCtx;
 
 use super::{modals, EditMode, EditOutcome};
 use crate::{
-    mut_edits, redraw_all_filters, App, DiagonalFilter, FilterType, Neighbourhood, RoadFilter,
-    Transition,
+    mut_edits, redraw_all_filters, App, DiagonalFilter, Neighbourhood, RoadFilter, Transition,
 };
 
 pub fn event(ctx: &mut EventCtx, app: &mut App, neighbourhood: &Neighbourhood) -> EditOutcome {

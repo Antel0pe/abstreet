@@ -4,12 +4,13 @@ use serde::{Deserialize, Serialize};
 
 use abstutil::{deserialize_btreemap, serialize_btreemap};
 use geom::{Angle, Distance, Line, Speed};
-use map_model::{CrossingType, EditRoad, IntersectionID, Map, RoadID, RoutingParams, TurnID};
+use map_model::{
+    CrossingType, EditRoad, FilterType, IntersectionID, Map, RoadID, RoutingParams, TurnID,
+};
 use widgetry::mapspace::{DrawCustomUnzoomedShapes, PerZoom};
-use widgetry::{Color, EventCtx, GeomBatch, RewriteColor};
+use widgetry::{EventCtx, GeomBatch, RewriteColor};
 
-use crate::render::{colors, Toggle3Zoomed};
-use crate::{mut_edits, App};
+use crate::{mut_edits, render, App};
 
 /// Stored in App per-map state. Before making any changes, call `before_edit`.
 #[derive(Clone, Default, Serialize, Deserialize)]
@@ -69,35 +70,6 @@ impl RoadFilter {
     }
 }
 
-/// Just determines the icon, has no semantics yet
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub enum FilterType {
-    NoEntry,
-    WalkCycleOnly,
-    BusGate,
-    SchoolStreet,
-}
-
-impl FilterType {
-    pub fn svg_path(self) -> &'static str {
-        match self {
-            FilterType::NoEntry => "system/assets/tools/no_entry.svg",
-            FilterType::WalkCycleOnly => "system/assets/tools/modal_filter.svg",
-            FilterType::BusGate => "system/assets/tools/bus_gate.svg",
-            FilterType::SchoolStreet => "system/assets/tools/school_street.svg",
-        }
-    }
-
-    pub fn hide_color(self) -> Color {
-        match self {
-            FilterType::WalkCycleOnly => Color::hex("#0b793a"),
-            FilterType::NoEntry => Color::RED,
-            FilterType::BusGate => *colors::BUS_ROUTE,
-            FilterType::SchoolStreet => Color::hex("#e31017"),
-        }
-    }
-}
-
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct Crossing {
     pub kind: CrossingType,
@@ -151,7 +123,7 @@ impl Edits {
     }
 
     /// Draw all modal filters
-    pub fn draw(&self, ctx: &EventCtx, map: &Map) -> Toggle3Zoomed {
+    pub fn draw(&self, ctx: &EventCtx, map: &Map) -> render::Toggle3Zoomed {
         let mut batch = GeomBatch::new();
         let mut low_zoom = DrawCustomUnzoomedShapes::builder();
 
@@ -162,7 +134,7 @@ impl Edits {
             FilterType::BusGate,
             FilterType::SchoolStreet,
         ] {
-            icons.insert(ft, GeomBatch::load_svg(ctx, ft.svg_path()));
+            icons.insert(ft, GeomBatch::load_svg(ctx, render::filter_svg_path(ft)));
         }
 
         for (r, filter) in &self.roads {
@@ -245,7 +217,7 @@ impl Edits {
         let step_size = 0.1;
         // TODO Ideally we get rid of Toggle3Zoomed and make DrawCustomUnzoomedShapes handle this
         // medium-zoom case.
-        Toggle3Zoomed::new(
+        render::Toggle3Zoomed::new(
             batch.build(ctx),
             low_zoom.build(PerZoom::new(min_zoom_for_detail, step_size)),
         )

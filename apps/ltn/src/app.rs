@@ -8,12 +8,12 @@ use map_gui::render::{DrawMap, DrawOptions};
 use map_gui::tools::CameraState;
 use map_gui::tools::DrawSimpleRoadLabels;
 use map_gui::{AppLike, ID};
-use map_model::{osm, CrossingType, IntersectionID, Map, RoutingParams};
+use map_model::{osm, CrossingType, FilterType, IntersectionID, Map, RoutingParams};
 use widgetry::tools::URLManager;
 use widgetry::{Canvas, Drawable, EventCtx, GfxCtx, SharedAppState, State, Warper};
 
 use crate::logic::Partitioning;
-use crate::{logic, pages, render, Edits, FilterType, NeighbourhoodID};
+use crate::{logic, pages, render, Edits, NeighbourhoodID};
 
 pub type Transition = widgetry::Transition<App>;
 

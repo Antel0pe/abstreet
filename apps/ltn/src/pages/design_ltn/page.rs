@@ -1,5 +1,6 @@
 use geom::{Angle, ArrowCap, Distance, PolyLine, Pt2D};
 use map_gui::tools::DrawSimpleRoadLabels;
+use map_model::FilterType;
 use osm2streets::Direction;
 use widgetry::mapspace::{DummyID, World};
 use widgetry::tools::{ChooseSomething, PopupMsg};
@@ -12,9 +13,7 @@ use super::{EditMode, EditNeighbourhood, EditOutcome};
 use crate::components::{AppwidePanel, BottomPanel, Mode};
 use crate::logic::AutoFilterHeuristic;
 use crate::render::colors;
-use crate::{
-    is_private, pages, render, App, FilterType, Neighbourhood, NeighbourhoodID, Transition,
-};
+use crate::{is_private, pages, render, App, Neighbourhood, NeighbourhoodID, Transition};
 
 pub struct DesignLTN {
     appwide_panel: AppwidePanel,
@@ -556,7 +555,7 @@ fn make_bottom_panel(
 
 fn edit_mode(ctx: &mut EventCtx, app: &App) -> Widget {
     let edit_mode = &app.session.edit_mode;
-    let hide_color = app.session.filter_type.hide_color();
+    let hide_color = render::filter_hide_color(app.session.filter_type);
     let name = match app.session.filter_type {
         FilterType::WalkCycleOnly => "Modal filter -- walking/cycling only",
         FilterType::NoEntry => "Modal filter - no entry",
@@ -568,7 +567,7 @@ fn edit_mode(ctx: &mut EventCtx, app: &App) -> Widget {
         Widget::custom_row(vec![
             ctx.style()
                 .btn_solid_primary
-                .icon(app.session.filter_type.svg_path())
+                .icon(render::filter_svg_path(app.session.filter_type))
                 .image_color(
                     RewriteColor::Change(hide_color, Color::CLEAR),
                     ControlState::Default,

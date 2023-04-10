@@ -1,12 +1,11 @@
+use map_model::FilterType;
 use widgetry::mapspace::{World, WorldOutcome};
 use widgetry::tools::open_browser;
 use widgetry::{lctrl, EventCtx, Key, Text, Transition};
 
 use super::{modals, road_name, EditOutcome, Obj};
 use crate::render::colors;
-use crate::{
-    mut_edits, redraw_all_filters, App, DiagonalFilter, FilterType, Neighbourhood, RoadFilter,
-};
+use crate::{mut_edits, redraw_all_filters, App, DiagonalFilter, Neighbourhood, RoadFilter};
 
 /// Creates clickable objects for managing filters on roads and intersections. Everything is
 /// invisible; the caller is responsible for drawing things.
