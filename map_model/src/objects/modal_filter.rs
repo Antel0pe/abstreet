@@ -41,7 +41,7 @@ impl RoadFilter {
 /// across groups.
 ///
 /// Be careful with `PartialEq` -- see `approx_eq`.
-#[derive(Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct DiagonalFilter {
     pub i: IntersectionID,
     pub r1: RoadID,
@@ -73,10 +73,10 @@ impl DiagonalFilter {
             let alt2 = DiagonalFilter::new(map, i, roads[1], roads[2], filter_type);
 
             match map.get_i(i).modal_filter {
-                Some(prev) => {
+                Some(ref prev) => {
                     if alt1.approx_eq(prev) {
                         commands.push(map.edit_intersection_cmd(i, |new| {
-                            new.modal_filter = Some(alt2);
+                            new.modal_filter = Some(alt2.clone());
                         }));
                     } else if alt2.approx_eq(prev) {
                         commands.push(map.edit_intersection_cmd(i, |new| {
@@ -88,7 +88,7 @@ impl DiagonalFilter {
                 }
                 None => {
                     commands.push(map.edit_intersection_cmd(i, |new| {
-                        new.modal_filter = Some(alt1);
+                        new.modal_filter = Some(alt1.clone());
                     }));
                 }
             }
@@ -203,7 +203,7 @@ impl DiagonalFilter {
         self.group1.contains(&from) == self.group1.contains(&to)
     }
 
-    fn avoid_movements_between_roads(&self) -> Vec<(RoadID, RoadID)> {
+    pub fn avoid_movements_between_roads(&self) -> Vec<(RoadID, RoadID)> {
         let mut pairs = Vec::new();
         for from in &self.group1 {
             for to in &self.group2 {

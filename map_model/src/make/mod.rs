@@ -106,6 +106,7 @@ impl Map {
                 incoming_lanes: Vec::new(),
                 outgoing_lanes: Vec::new(),
                 roads: i.roads.iter().map(|id| road_id_mapping[id]).collect(),
+                modal_filter: None,
                 merged: !raw.streets.intersections[&i.id]
                     .trim_roads_for_merging
                     .is_empty(),

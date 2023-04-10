@@ -13,9 +13,9 @@ use osm2streets::get_lane_specs_ltr;
 
 pub use self::perma::PermanentMapEdits;
 use crate::{
-    AccessRestrictions, ControlStopSign, ControlTrafficSignal, IntersectionControl, IntersectionID,
-    LaneID, LaneSpec, Map, MapConfig, ParkingLotID, Road, RoadFilter, RoadID, TransitRouteID,
-    TurnID, TurnType,
+    AccessRestrictions, ControlStopSign, ControlTrafficSignal, DiagonalFilter, IntersectionControl,
+    IntersectionID, LaneID, LaneSpec, Map, MapConfig, ParkingLotID, Road, RoadFilter, RoadID,
+    TransitRouteID, TurnID, TurnType,
 };
 
 mod apply;
@@ -38,7 +38,6 @@ pub struct MapEdits {
     /// Derived from commands, kept up to date by update_derived
     pub changed_roads: BTreeSet<RoadID>,
     pub original_intersections: BTreeMap<IntersectionID, EditIntersection>,
-    pub original_crosswalks: BTreeMap<IntersectionID, EditCrosswalks>,
     pub changed_routes: BTreeSet<TransitRouteID>,
 
     /// Some edits are included in the game by default, in data/system/proposals, as "community
@@ -64,11 +63,6 @@ pub enum EditCmd {
         old: Vec<Time>,
         new: Vec<Time>,
     },
-    ChangeCrosswalks {
-        i: IntersectionID,
-        old: EditCrosswalks,
-        new: EditCrosswalks,
-    },
 }
 
 pub struct EditEffects {
@@ -91,18 +85,22 @@ pub struct EditRoad {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum EditIntersection {
+pub struct EditIntersection {
+    pub control: EditIntersectionControl,
+    pub modal_filter: Option<DiagonalFilter>,
+    /// This must contain all crossing turns at one intersection, each mapped either to Crosswalk
+    /// or UnmarkedCrossing
+    pub crosswalks: BTreeMap<TurnID, TurnType>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum EditIntersectionControl {
     StopSign(ControlStopSign),
     // Don't keep ControlTrafficSignal here, because it contains movements that should be
     // generated after all lane edits are applied.
     TrafficSignal(traffic_signal_data::TrafficSignal),
     Closed,
 }
-
-/// This must contain all crossing turns at one intersection, each mapped either to Crosswalk or
-/// UnmarkedCrossing
-#[derive(Debug, Clone, PartialEq)]
-pub struct EditCrosswalks(pub BTreeMap<TurnID, TurnType>);
 
 impl EditRoad {
     pub fn get_orig_from_osm(r: &Road, cfg: &MapConfig) -> EditRoad {
@@ -161,6 +159,23 @@ impl EditRoad {
     }
 }
 
+impl EditIntersection {
+    fn diff(&self, other: &EditIntersection) -> Vec<String> {
+        let mut changes = Vec::new();
+        // TODO Could get more specific about changes to stop signs, traffic signals, etc
+        if self.control != other.control {
+            changes.push("control type".to_string());
+        }
+        if self.crosswalks != other.crosswalks {
+            changes.push("crosswalks".to_string());
+        }
+        if self.modal_filter != other.modal_filter {
+            changes.push("modal filter".to_string());
+        }
+        changes
+    }
+}
+
 impl MapEdits {
     pub(crate) fn new() -> MapEdits {
         MapEdits {
@@ -172,7 +187,6 @@ impl MapEdits {
 
             changed_roads: BTreeSet::new(),
             original_intersections: BTreeMap::new(),
-            original_crosswalks: BTreeMap::new(),
             changed_routes: BTreeSet::new(),
         }
     }
@@ -244,7 +258,6 @@ impl MapEdits {
     fn update_derived(&mut self, map: &Map) {
         self.changed_roads.clear();
         self.original_intersections.clear();
-        self.original_crosswalks.clear();
         self.changed_routes.clear();
 
         for cmd in &self.commands {
@@ -255,11 +268,6 @@ impl MapEdits {
                 EditCmd::ChangeIntersection { i, ref old, .. } => {
                     if !self.original_intersections.contains_key(i) {
                         self.original_intersections.insert(*i, old.clone());
-                    }
-                }
-                EditCmd::ChangeCrosswalks { i, ref old, .. } => {
-                    if !self.original_crosswalks.contains_key(i) {
-                        self.original_crosswalks.insert(*i, old.clone());
                     }
                 }
                 EditCmd::ChangeRouteSchedule { id, .. } => {
@@ -273,8 +281,6 @@ impl MapEdits {
         });
         self.original_intersections
             .retain(|i, orig| map.get_i_edit(*i) != orig.clone());
-        self.original_crosswalks
-            .retain(|i, orig| map.get_i_crosswalks_edit(*i) != orig.clone());
         self.changed_routes.retain(|br| {
             let r = map.get_tr(*br);
             r.spawn_times != r.orig_spawn_times
@@ -295,13 +301,6 @@ impl MapEdits {
                 i: *i,
                 old: old.clone(),
                 new: map.get_i_edit(*i),
-            });
-        }
-        for (i, old) in &self.original_crosswalks {
-            self.commands.push(EditCmd::ChangeCrosswalks {
-                i: *i,
-                old: old.clone(),
-                new: map.get_i_crosswalks_edit(*i),
             });
         }
         for r in &self.changed_routes {
@@ -376,13 +375,10 @@ impl EditCmd {
                 details = new.diff(old);
                 format!("road #{}", r.0)
             }
-            // TODO Describe changes
-            EditCmd::ChangeIntersection { i, new, .. } => match new {
-                EditIntersection::StopSign(_) => format!("stop sign #{}", i.0),
-                EditIntersection::TrafficSignal(_) => format!("traffic signal #{}", i.0),
-                EditIntersection::Closed => format!("close {}", i),
-            },
-            EditCmd::ChangeCrosswalks { i, .. } => format!("crosswalks at {}", i),
+            EditCmd::ChangeIntersection { i, old, new } => {
+                details = new.diff(old);
+                format!("intersection #{}", i.0)
+            }
             EditCmd::ChangeRouteSchedule { id, .. } => {
                 format!("reschedule route {}", map.get_tr(*id).short_name)
             }
@@ -433,25 +429,38 @@ impl Map {
     }
 
     pub fn get_i_edit(&self, i: IntersectionID) -> EditIntersection {
-        match self.get_i(i).control {
+        let i = self.get_i(i);
+        let control = match i.control {
             IntersectionControl::Signed | IntersectionControl::Uncontrolled => {
-                EditIntersection::StopSign(self.get_stop_sign(i).clone())
+                EditIntersectionControl::StopSign(self.get_stop_sign(i.id).clone())
             }
             IntersectionControl::Signalled => {
-                EditIntersection::TrafficSignal(self.get_traffic_signal(i).export(self))
+                EditIntersectionControl::TrafficSignal(self.get_traffic_signal(i.id).export(self))
             }
-            IntersectionControl::Construction => EditIntersection::Closed,
+            IntersectionControl::Construction => EditIntersectionControl::Closed,
+        };
+        let mut crosswalks = BTreeMap::new();
+        for turn in &i.turns {
+            if turn.turn_type.pedestrian_crossing() {
+                crosswalks.insert(turn.id, turn.turn_type);
+            }
+        }
+        EditIntersection {
+            control,
+            modal_filter: i.modal_filter.clone(),
+            crosswalks,
         }
     }
 
-    pub fn get_i_crosswalks_edit(&self, i: IntersectionID) -> EditCrosswalks {
-        let mut turns = BTreeMap::new();
-        for turn in &self.get_i(i).turns {
-            if turn.turn_type.pedestrian_crossing() {
-                turns.insert(turn.id, turn.turn_type);
-            }
-        }
-        EditCrosswalks(turns)
+    pub fn edit_intersection_cmd<F: Fn(&mut EditIntersection)>(
+        &self,
+        i: IntersectionID,
+        f: F,
+    ) -> EditCmd {
+        let old = self.get_i_edit(i);
+        let mut new = old.clone();
+        f(&mut new);
+        EditCmd::ChangeIntersection { i, old, new }
     }
 
     pub fn save_edits(&self) {

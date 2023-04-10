@@ -1,9 +1,9 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
 use abstutil::{deserialize_btreemap, serialize_btreemap};
-use geom::{Angle, Distance, Line, Speed};
+use geom::{Angle, Distance, Speed};
 use map_model::{
     CrossingType, DiagonalFilter, EditRoad, FilterType, IntersectionID, Map, RoadFilter, RoadID,
     RoutingParams, TurnID,
@@ -11,7 +11,7 @@ use map_model::{
 use widgetry::mapspace::{DrawCustomUnzoomedShapes, PerZoom};
 use widgetry::{EventCtx, GeomBatch, RewriteColor};
 
-use crate::{mut_edits, render, App};
+use crate::render;
 
 /// Stored in App per-map state. Before making any changes, call `before_edit`.
 #[derive(Clone, Default, Serialize, Deserialize)]
