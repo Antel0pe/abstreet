@@ -1,5 +1,6 @@
 mod cells;
 pub mod colors;
+mod filters;
 
 use geom::Distance;
 use map_model::{AmenityType, ExtraPOIType, FilterType, Map};
@@ -7,6 +8,7 @@ use widgetry::mapspace::DrawCustomUnzoomedShapes;
 use widgetry::{Color, Drawable, EventCtx, GeomBatch, GfxCtx, Line, RewriteColor, Text};
 
 pub use cells::RenderCells;
+pub use filters::render_modal_filters;
 
 pub fn render_poi_icons(ctx: &EventCtx, map: &Map) -> Drawable {
     let mut batch = GeomBatch::new();

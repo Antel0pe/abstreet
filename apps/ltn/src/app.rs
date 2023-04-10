@@ -62,8 +62,8 @@ impl PerMap {
         // Do this before creating the default partitioning. Non-driveable roads in OSM get turned
         // into driveable roads and a filter here, and we want the partitioning to "see" those
         // roads.
-        let edits = logic::transform_existing_filters(&mut map, timer);
-        let mut proposals = crate::save::Proposals::new(&map, edits, timer);
+        logic::transform_existing(&mut map, timer);
+        let proposals = crate::save::Proposals::new(&map, timer);
 
         let mut routing_params_before_changes = map.routing_params().clone();
         proposals
@@ -71,9 +71,7 @@ impl PerMap {
             .edits
             .update_routing_params(&mut routing_params_before_changes);
 
-        let draw_all_filters = proposals.current_proposal.edits.draw(ctx, &map);
-
-        logic::populate_existing_crossings(&map, &mut proposals.current_proposal.edits);
+        let draw_all_filters = render::render_modal_filters(ctx, &map);
 
         // Create DrawMap after transform_existing_filters, which modifies road widths
         let draw_map = DrawMap::new(ctx, &map, opts, cs, timer);

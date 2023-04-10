@@ -15,7 +15,7 @@ use widgetry::tools::PopupMsg;
 use widgetry::{EventCtx, State};
 
 use crate::logic::{BlockID, Partitioning};
-use crate::{pages, App, Edits, Transition};
+use crate::{pages, render, App, Edits, Transition};
 
 pub use share::PROPOSAL_HOST_URL;
 
@@ -51,7 +51,7 @@ impl Proposal {
         }
 
         app.per_map.proposals.current_proposal = self;
-        app.per_map.draw_all_filters = app.edits().draw(ctx, &app.per_map.map);
+        app.per_map.draw_all_filters = render::render_modal_filters(ctx, &app.per_map.map);
 
         // Then append any new one-way changes. Edits are applied in order, so the net effect
         // should be correct.
@@ -157,7 +157,7 @@ pub struct Proposals {
 
 impl Proposals {
     // This calculates partitioning, which is expensive
-    pub fn new(map: &Map, edits: Edits, timer: &mut Timer) -> Self {
+    pub fn new(map: &Map, timer: &mut Timer) -> Self {
         Self {
             list: vec![None],
             current: 0,
@@ -167,7 +167,7 @@ impl Proposals {
                 name: "existing LTNs".to_string(),
                 abst_version: map_gui::tools::version().to_string(),
                 partitioning: Partitioning::seed_using_heuristics(map, timer),
-                edits,
+                edits: Edits::default(),
                 unsaved_parent: None,
             },
         }

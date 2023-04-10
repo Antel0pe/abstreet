@@ -229,7 +229,7 @@ pub fn run_wasm(root_dom_id: String, assets_base_url: String, assets_are_gzipped
 }
 
 pub fn redraw_all_filters(ctx: &EventCtx, app: &mut App) {
-    app.per_map.draw_all_filters = app.edits().draw(ctx, &app.per_map.map);
+    app.per_map.draw_all_filters = render::render_modal_filters(ctx, &app.per_map.map);
 }
 
 fn is_private(road: &Road) -> bool {
