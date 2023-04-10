@@ -1,11 +1,9 @@
 use geom::PolyLine;
-use map_model::FilterType;
+use map_model::{FilterType, RoadFilter};
 use widgetry::EventCtx;
 
 use super::{modals, EditMode, EditOutcome};
-use crate::{
-    mut_edits, redraw_all_filters, App, DiagonalFilter, Neighbourhood, RoadFilter, Transition,
-};
+use crate::{mut_edits, redraw_all_filters, App, DiagonalFilter, Neighbourhood, Transition};
 
 pub fn event(ctx: &mut EventCtx, app: &mut App, neighbourhood: &Neighbourhood) -> EditOutcome {
     if let EditMode::FreehandFilters(ref mut lasso) = app.session.edit_mode {

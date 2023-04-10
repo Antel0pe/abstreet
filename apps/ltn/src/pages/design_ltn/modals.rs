@@ -2,14 +2,14 @@ use std::collections::BTreeSet;
 
 use geom::{Distance, Polygon};
 use map_gui::tools::grey_out_map;
-use map_model::{EditRoad, FilterType, RoadID};
+use map_model::{EditRoad, FilterType, RoadFilter, RoadID};
 use osm2streets::{Direction, LaneSpec};
 use widgetry::{
     Color, ControlState, DrawBaselayer, EventCtx, GeomBatch, GfxCtx, Key, Line, Outcome, Panel,
     RewriteColor, State, Text, Texture, Toggle, Widget,
 };
 
-use crate::{mut_edits, redraw_all_filters, render, App, RoadFilter, Transition};
+use crate::{mut_edits, redraw_all_filters, render, App, Transition};
 
 pub struct ResolveOneWayAndFilter {
     panel: Panel,

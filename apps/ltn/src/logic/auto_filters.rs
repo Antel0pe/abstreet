@@ -4,10 +4,11 @@
 use anyhow::Result;
 
 use abstutil::Timer;
+use map_model::RoadFilter;
 use map_model::RoadID;
 use widgetry::{Choice, EventCtx};
 
-use crate::{mut_edits, redraw_all_filters, App, Neighbourhood, RoadFilter};
+use crate::{mut_edits, redraw_all_filters, App, Neighbourhood};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum AutoFilterHeuristic {

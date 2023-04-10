@@ -1,8 +1,8 @@
 use abstutil::{Tags, Timer};
 use geom::Distance;
-use map_model::{osm, FilterType, Map, Road};
+use map_model::{osm, FilterType, Map, Road, RoadFilter};
 
-use crate::{Edits, RoadFilter};
+use crate::Edits;
 
 /// Detect roads that're modelled in OSM as cycleways, but really are regular roads with modal
 /// filters. Transform them into normal roads, and instead use this tool's explicit representation

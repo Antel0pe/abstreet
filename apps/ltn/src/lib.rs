@@ -8,7 +8,7 @@ use widgetry::tools::FutureLoader;
 use widgetry::{EventCtx, Settings, State};
 
 pub use app::{App, PerMap, Session, Transition};
-pub use filters::{Crossing, DiagonalFilter, Edits, RoadFilter};
+pub use filters::{Crossing, DiagonalFilter, Edits};
 pub use logic::NeighbourhoodID;
 pub use neighbourhood::{Cell, DistanceInterval, Neighbourhood};
 

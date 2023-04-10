@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 use abstutil::{deserialize_btreemap, serialize_btreemap};
 use geom::{Angle, Distance, Line, Speed};
 use map_model::{
-    CrossingType, EditRoad, FilterType, IntersectionID, Map, RoadID, RoutingParams, TurnID,
+    CrossingType, EditRoad, FilterType, IntersectionID, Map, RoadFilter, RoadID, RoutingParams,
+    TurnID,
 };
 use widgetry::mapspace::{DrawCustomUnzoomedShapes, PerZoom};
 use widgetry::{EventCtx, GeomBatch, RewriteColor};
@@ -50,24 +51,6 @@ pub struct Edits {
     /// Edit history is preserved recursively
     #[serde(skip_serializing, skip_deserializing)]
     pub previous_version: Box<Option<Edits>>,
-}
-
-/// A filter placed somewhere along a road
-#[derive(Clone, PartialEq, Serialize, Deserialize)]
-pub struct RoadFilter {
-    pub dist: Distance,
-    pub filter_type: FilterType,
-    pub user_modified: bool,
-}
-
-impl RoadFilter {
-    pub fn new_by_user(dist: Distance, filter_type: FilterType) -> Self {
-        Self {
-            dist,
-            filter_type,
-            user_modified: true,
-        }
-    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
