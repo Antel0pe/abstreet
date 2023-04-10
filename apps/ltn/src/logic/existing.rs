@@ -12,8 +12,6 @@ pub fn transform_existing(map: &mut Map, timer: &mut Timer) {
     let mut crossings = detect_crossings(map);
 
     for (r, dist) in detect_filters(map) {
-        let crossings_here = crossings.remove(&r).unwrap_or_else(Vec::new);
-
         edits.commands.push(map.edit_road_cmd(r, |new| {
             // If this road wasn't driveable already, then make it that way.
             if !crate::is_driveable(map.get_r(r), map) {
@@ -37,7 +35,7 @@ pub fn transform_existing(map: &mut Map, timer: &mut Timer) {
                 user_modified: false,
             });
 
-            new.crossings = crossings_here.clone();
+            new.crossings = crossings.remove(&r).unwrap_or_else(Vec::new);
         }));
     }
 
@@ -46,7 +44,7 @@ pub fn transform_existing(map: &mut Map, timer: &mut Timer) {
     // filters unless we do it this way.
     for (r, list) in crossings {
         edits.commands.push(map.edit_road_cmd(r, |new| {
-            new.crossings = list.clone();
+            new.crossings = list;
         }));
     }
 

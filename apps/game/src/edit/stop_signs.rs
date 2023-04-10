@@ -196,7 +196,7 @@ impl SimpleState<App> for StopSignEditor {
                 edits
                     .commands
                     .push(app.primary.map.edit_intersection_cmd(self.id, |new| {
-                        new.control = EditIntersectionControl::StopSign(sign.clone());
+                        new.control = EditIntersectionControl::StopSign(sign);
                     }));
                 apply_map_edits(ctx, app, edits);
                 return Transition::Replace(StopSignEditor::new_state(

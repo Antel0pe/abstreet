@@ -429,7 +429,7 @@ impl Map {
         }
     }
 
-    pub fn edit_road_cmd<F: Fn(&mut EditRoad)>(&self, r: RoadID, f: F) -> EditCmd {
+    pub fn edit_road_cmd<F: FnOnce(&mut EditRoad)>(&self, r: RoadID, f: F) -> EditCmd {
         let old = self.get_r_edit(r);
         let mut new = old.clone();
         f(&mut new);
@@ -460,7 +460,7 @@ impl Map {
         }
     }
 
-    pub fn edit_intersection_cmd<F: Fn(&mut EditIntersection)>(
+    pub fn edit_intersection_cmd<F: FnOnce(&mut EditIntersection)>(
         &self,
         i: IntersectionID,
         f: F,

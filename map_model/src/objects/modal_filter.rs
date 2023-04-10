@@ -76,7 +76,7 @@ impl DiagonalFilter {
                 Some(ref prev) => {
                     if alt1.approx_eq(prev) {
                         commands.push(map.edit_intersection_cmd(i, |new| {
-                            new.modal_filter = Some(alt2.clone());
+                            new.modal_filter = Some(alt2);
                         }));
                     } else if alt2.approx_eq(prev) {
                         commands.push(map.edit_intersection_cmd(i, |new| {
@@ -88,7 +88,7 @@ impl DiagonalFilter {
                 }
                 None => {
                     commands.push(map.edit_intersection_cmd(i, |new| {
-                        new.modal_filter = Some(alt1.clone());
+                        new.modal_filter = Some(alt1);
                     }));
                 }
             }
