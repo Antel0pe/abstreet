@@ -11,7 +11,7 @@ use widgetry::{
 
 use crate::components::{AppwidePanel, BottomPanel, Mode};
 use crate::render::{colors, Toggle3Zoomed};
-use crate::{logic, App, Transition};
+use crate::{App, Transition};
 
 pub struct Crossings {
     appwide_panel: AppwidePanel,
@@ -112,7 +112,12 @@ impl State<App> for Crossings {
                     self.bottom_panel = BottomPanel::new(ctx, &self.appwide_panel, contents);
                 }
                 "undo" => {
-                    logic::map_edits::undo_proposal(ctx, app);
+                    let mut edits = app.per_map.map.get_edits().clone();
+                    edits.commands.pop().unwrap();
+                    app.per_map
+                        .map
+                        .must_apply_edits(edits, &mut Timer::throwaway());
+                    crate::redraw_all_filters(ctx, app);
                     self.update(ctx, app);
                 }
                 _ => unreachable!(),
@@ -369,7 +374,7 @@ fn make_bottom_panel(ctx: &mut EventCtx, app: &App) -> Widget {
             ctx.style()
                 .btn_plain
                 .icon("system/assets/tools/undo.svg")
-                .disabled(app.edits().previous_version.is_none())
+                .disabled(app.per_map.map.get_edits().commands.is_empty())
                 .hotkey(lctrl(Key::Z))
                 .build_widget(ctx, "undo"),
             // TODO Only count new crossings

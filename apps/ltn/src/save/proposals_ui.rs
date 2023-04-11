@@ -30,7 +30,7 @@ impl Proposals {
             let button = if let Some(proposal) = proposal {
                 ctx.style()
                     .btn_solid_primary
-                    .text(format!("{} - {}", idx + 1, proposal.name))
+                    .text(format!("{} - {}", idx + 1, proposal.edits.edits_name))
                     .hotkey(Key::NUM_KEYS[idx])
                     .build_widget(ctx, &format!("switch to proposal {}", idx))
             } else {
@@ -39,7 +39,7 @@ impl Proposals {
                     .text(format!(
                         "{} - {}",
                         idx + 1,
-                        app.per_map.proposals.current_proposal.name
+                        app.per_map.proposals.current_proposal.edits.edits_name
                     ))
                     .disabled(true)
                     .build_def(ctx)
@@ -96,8 +96,6 @@ impl Proposals {
                 if app.per_map.proposals.current != 0 {
                     switch_to_existing_proposal(ctx, app, 0);
                 }
-
-                app.per_map.proposals.before_edit();
             }
             "Load" => {
                 return Some(Transition::Push(load_picker_ui(

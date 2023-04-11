@@ -507,7 +507,7 @@ fn make_bottom_panel(
             ctx.style()
                 .btn_plain
                 .icon("system/assets/tools/undo.svg")
-                .disabled(app.edits().previous_version.is_none())
+                .disabled(app.per_map.map.get_edits().commands.is_empty())
                 .hotkey(lctrl(Key::Z))
                 .build_widget(ctx, "undo"),
             Widget::col(vec![

@@ -133,7 +133,7 @@ impl State<App> for SaveDialog {
                     // TODO If we're clobbering something that exists in Proposals especially...
                     // watch out
 
-                    app.per_map.proposals.current_proposal.name = name;
+                    app.per_map.proposals.current_proposal.edits.edits_name = name;
                     app.per_map.proposals.current_proposal.unsaved_parent = None;
                     match inner_save(app) {
                         // If we changed the name, we'll want to recreate the panel
@@ -147,7 +147,7 @@ impl State<App> for SaveDialog {
                     // TODO If the user loaded the parent file again, this'll be confusing. Maybe
                     // ban that?
                     let proposals = &mut app.per_map.proposals;
-                    proposals.current_proposal.name =
+                    proposals.current_proposal.edits.edits_name =
                         proposals.current_proposal.unsaved_parent.take().unwrap();
 
                     match inner_save(app) {
@@ -199,7 +199,7 @@ impl State<App> for SaveDialog {
 
 fn inner_save(app: &App) -> Result<()> {
     let proposal = &app.per_map.proposals.current_proposal;
-    let path = abstio::path_ltn_proposals(app.per_map.map.get_name(), &proposal.name);
+    let path = abstio::path_ltn_proposals(app.per_map.map.get_name(), &proposal.edits.edits_name);
     let output_buffer = proposal.to_gzipped_bytes(app)?;
     abstio::write_raw(path, &output_buffer)
 }

@@ -66,8 +66,6 @@ impl AutoFilterHeuristic {
 
         // TODO If we already have no shortcuts, stop
 
-        app.per_map.proposals.before_edit();
-
         match self {
             AutoFilterHeuristic::Greedy => greedy(app, neighbourhood),
             AutoFilterHeuristic::BruteForce => brute_force(app, neighbourhood, timer),
@@ -75,7 +73,8 @@ impl AutoFilterHeuristic {
             AutoFilterHeuristic::OnlyOneBorder => only_one_border(app, neighbourhood),
         }
 
-        let empty = app.per_map.proposals.cancel_empty_edit();
+        // TODO Detect if we changed anything
+        let empty = false;
         redraw_all_filters(ctx, app);
         if empty {
             bail!("No new filters created");

@@ -1,7 +1,6 @@
 mod auto_filters;
 mod existing;
 pub mod impact;
-pub mod map_edits;
 mod partition;
 mod shortcuts;
 

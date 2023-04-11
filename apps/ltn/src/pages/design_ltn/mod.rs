@@ -6,12 +6,13 @@ mod page;
 mod shortcuts;
 mod speed_limits;
 
+use abstutil::Timer;
 use map_model::{IntersectionID, Road, RoadID};
 use widgetry::mapspace::{ObjectID, World};
 use widgetry::tools::{PolyLineLasso, PopupMsg};
 use widgetry::{EventCtx, Panel};
 
-use crate::{is_private, logic, pages, App, Neighbourhood, Transition};
+use crate::{is_private, pages, App, Neighbourhood, Transition};
 
 pub use page::DesignLTN;
 
@@ -125,7 +126,12 @@ impl EditNeighbourhood {
                 pages::PerResidentImpact::new_state(ctx, app, id, None),
             )),
             "undo" => {
-                logic::map_edits::undo_proposal(ctx, app);
+                let mut edits = app.per_map.map.get_edits().clone();
+                edits.commands.pop().unwrap();
+                app.per_map
+                    .map
+                    .must_apply_edits(edits, &mut Timer::throwaway());
+                crate::redraw_all_filters(ctx, app);
                 // TODO Ideally, preserve panel state (checkboxes and dropdowns)
                 if let EditMode::Shortcuts(ref mut maybe_focus) = app.session.edit_mode {
                     *maybe_focus = None;

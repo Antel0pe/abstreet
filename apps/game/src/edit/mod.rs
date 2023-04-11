@@ -891,7 +891,7 @@ fn make_changelist(ctx: &mut EventCtx, app: &App) -> Panel {
             app.cs.edits_layer,
             format!(
                 "{} roads, {} intersections changed",
-                edits.changed_roads.len(),
+                edits.original_roads.len(),
                 edits.original_intersections.len()
             ),
         ),

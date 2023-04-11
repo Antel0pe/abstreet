@@ -13,7 +13,7 @@ use widgetry::tools::URLManager;
 use widgetry::{Canvas, Drawable, EventCtx, GfxCtx, SharedAppState, State, Warper};
 
 use crate::logic::Partitioning;
-use crate::{logic, pages, render, Edits, NeighbourhoodID};
+use crate::{logic, pages, render, NeighbourhoodID};
 
 pub type Transition = widgetry::Transition<App>;
 
@@ -275,9 +275,6 @@ impl App {
         g.redraw(&self.per_map.draw_map.draw_all_building_outlines);
     }
 
-    pub fn edits(&self) -> &Edits {
-        &self.per_map.proposals.current_proposal.edits
-    }
     pub fn partitioning(&self) -> &Partitioning {
         &self.per_map.proposals.current_proposal.partitioning
     }

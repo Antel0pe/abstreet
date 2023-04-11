@@ -8,7 +8,6 @@ use widgetry::tools::FutureLoader;
 use widgetry::{EventCtx, Settings, State};
 
 pub use app::{App, PerMap, Session, Transition};
-pub use filters::Edits;
 pub use logic::NeighbourhoodID;
 pub use neighbourhood::{Cell, DistanceInterval, Neighbourhood};
 
@@ -20,7 +19,6 @@ extern crate log;
 mod app;
 mod components;
 mod export;
-mod filters;
 mod logic;
 mod neighbourhood;
 mod pages;
@@ -145,7 +143,7 @@ fn setup_initial_states(
             app.per_map.proposals.clear_all_but_current();
             // TODO Kind of a weird hack -- rename this to "existing LTNs" so we can't overwrite
             // it!
-            app.per_map.proposals.current_proposal.name = "existing LTNs".to_string();
+            app.per_map.proposals.current_proposal.edits.edits_name = "existing LTNs".to_string();
         }
 
         // Look for the neighbourhood containing one small street
@@ -241,16 +239,9 @@ fn is_driveable(road: &Road, map: &Map) -> bool {
     PathConstraints::Car.can_use_road(road, map) && !is_private(road)
 }
 
-// The current edits and partitioning are stored deeply nested in App. For read-only access, we can
-// use a regular helper method. For writing, we can't, because we'll get a borrow error -- so
-// instead just use macros to make it less annoying to modify
-#[macro_export]
-macro_rules! mut_edits {
-    ($app:ident) => {
-        $app.per_map.proposals.current_proposal.edits
-    };
-}
-
+// The current partitioning is stored deeply nested in App. For read-only access, we can use a
+// regular helper method. For writing, we can't, because we'll get a borrow error -- so instead
+// just use macros to make it less annoying to modify
 #[macro_export]
 macro_rules! mut_partitioning {
     ($app:ident) => {
