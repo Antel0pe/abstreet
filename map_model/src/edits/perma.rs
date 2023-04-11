@@ -24,10 +24,6 @@ pub struct PermanentMapEdits {
     pub edits_name: String,
     pub version: usize,
     commands: Vec<PermanentEditCmd>,
-    /// If false, adjacent roads with the same AccessRestrictions will not be merged into the same
-    /// Zone; every Road will be its own Zone. This is used to experiment with a per-road cap. Note
-    /// this is a map-wide setting.
-    merge_zones: bool,
 
     /// Edits without these are player generated.
     pub proposal_description: Vec<String>,
@@ -164,7 +160,6 @@ impl MapEdits {
             proposal_description: self.proposal_description.clone(),
             proposal_link: self.proposal_link.clone(),
             commands: self.commands.iter().map(|cmd| cmd.to_perma(map)).collect(),
-            merge_zones: self.merge_zones,
         }
     }
 }
@@ -182,7 +177,6 @@ impl PermanentMapEdits {
                 .into_iter()
                 .map(|cmd| cmd.into_cmd(map))
                 .collect::<Result<Vec<EditCmd>>>()?,
-            merge_zones: self.merge_zones,
 
             original_roads: BTreeMap::new(),
             original_intersections: BTreeMap::new(),
@@ -210,7 +204,6 @@ impl PermanentMapEdits {
                     }
                 })
                 .collect(),
-            merge_zones: self.merge_zones,
 
             original_roads: BTreeMap::new(),
             original_intersections: BTreeMap::new(),

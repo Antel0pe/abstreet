@@ -124,14 +124,11 @@ impl Map {
             }
         }
 
-        let merge_zones_changed = self.edits.merge_zones != new_edits.merge_zones;
-
         new_edits.update_derived(self);
         self.edits = new_edits;
         self.pathfinder_dirty = true;
 
-        // Update zones after setting the new edits, since it'll pull merge_zones from there
-        if !effects.changed_roads.is_empty() || merge_zones_changed {
+        if !effects.changed_roads.is_empty() {
             self.zones = Zone::make_all(self);
         }
 

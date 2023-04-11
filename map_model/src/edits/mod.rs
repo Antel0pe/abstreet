@@ -30,10 +30,6 @@ pub struct MapEdits {
     /// A stack, oldest edit is first. The same intersection may be edited multiple times in this
     /// stack, until compress() happens.
     pub commands: Vec<EditCmd>,
-    /// If false, adjacent roads with the same AccessRestrictions will not be merged into the same
-    /// Zone; every Road will be its own Zone. This is used to experiment with a per-road cap. Note
-    /// this is a map-wide setting.
-    pub merge_zones: bool,
 
     /// Derived from commands, kept up to date by update_derived
     pub original_roads: BTreeMap<RoadID, EditRoad>,
@@ -189,7 +185,6 @@ impl MapEdits {
             proposal_description: Vec::new(),
             proposal_link: None,
             commands: Vec::new(),
-            merge_zones: true,
 
             original_roads: BTreeMap::new(),
             original_intersections: BTreeMap::new(),
