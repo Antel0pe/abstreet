@@ -117,6 +117,7 @@ impl PermanentEditCmd {
                         return Ok(EditCmd::ChangeRoad {
                             r: id,
                             new,
+                            // Note we change 'old' to match the current basemap
                             old: EditRoad::get_orig_from_osm(map.get_r(id), map.get_config()),
                         });
                     } else {
@@ -183,7 +184,7 @@ impl PermanentMapEdits {
                 .collect::<Result<Vec<EditCmd>>>()?,
             merge_zones: self.merge_zones,
 
-            changed_roads: BTreeSet::new(),
+            original_roads: BTreeMap::new(),
             original_intersections: BTreeMap::new(),
             changed_routes: BTreeSet::new(),
         };
@@ -211,7 +212,7 @@ impl PermanentMapEdits {
                 .collect(),
             merge_zones: self.merge_zones,
 
-            changed_roads: BTreeSet::new(),
+            original_roads: BTreeMap::new(),
             original_intersections: BTreeMap::new(),
             changed_routes: BTreeSet::new(),
         };

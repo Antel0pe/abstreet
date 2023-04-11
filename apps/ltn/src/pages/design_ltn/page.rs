@@ -490,6 +490,8 @@ fn make_bottom_panel(
     appwide_panel: &AppwidePanel,
     per_tab_contents: Widget,
 ) -> Panel {
+    let (road_filters, diagonal_filters, one_ways) = count_edits(app);
+
     let row = Widget::row(vec![
         edit_mode(ctx, app),
         if let EditMode::Shortcuts(ref focus) = app.session.edit_mode {
@@ -509,13 +511,8 @@ fn make_bottom_panel(
                 .hotkey(lctrl(Key::Z))
                 .build_widget(ctx, "undo"),
             Widget::col(vec![
-                // TODO Only count new filters, not existing
-                format!(
-                    "{} filters",
-                    app.edits().roads.len() + app.edits().intersections.len()
-                )
-                .text_widget(ctx),
-                format!("{} road directions changed", app.edits().one_ways.len()).text_widget(ctx),
+                format!("{} filters", road_filters + diagonal_filters).text_widget(ctx),
+                format!("{} road directions changed", one_ways).text_widget(ctx),
             ]),
         ]),
         Widget::vertical_separator(ctx),
@@ -549,6 +546,35 @@ fn make_bottom_panel(
     .evenly_spaced();
 
     BottomPanel::new(ctx, appwide_panel, row)
+}
+
+fn count_edits(app: &App) -> (usize, usize, usize) {
+    let map = &app.per_map.map;
+    let mut road_filters = 0;
+    let mut diagonal_filters = 0;
+    let mut one_ways = 0;
+
+    // TODO Don't include existing filters. But also, don't rely on user_modified
+    for (r, orig) in &map.get_edits().original_roads {
+        let road = map.get_r(*r);
+        // Don't count existing filters that were modified?
+        if road.modal_filter.is_some() && orig.modal_filter.is_none() {
+            road_filters += 1;
+        }
+        let dir_new = road.lanes.iter().map(|l| l.dir).collect::<Vec<_>>();
+        let dir_old = orig.lanes_ltr.iter().map(|l| l.dir).collect::<Vec<_>>();
+        // TODO This incorrectly includes some existing filters on cycleways
+        if dir_new != dir_old {
+            one_ways += 1;
+        }
+    }
+    for (i, orig) in &map.get_edits().original_intersections {
+        if map.get_i(*i).modal_filter.is_some() && orig.modal_filter.is_none() {
+            diagonal_filters += 1;
+        }
+    }
+
+    (road_filters, diagonal_filters, one_ways)
 }
 
 fn edit_mode(ctx: &mut EventCtx, app: &App) -> Widget {

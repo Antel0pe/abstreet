@@ -314,7 +314,7 @@ fn draw_porosity(ctx: &EventCtx, app: &App) -> Drawable {
             .perimeter
             .roads
             .iter()
-            .filter(|id| app.edits().crossings.contains_key(&id.road))
+            .filter(|id| !app.per_map.map.get_r(id.road).crossings.is_empty())
             .count();
         let color = if num_crossings == 0 {
             *colors::IMPERMEABLE
@@ -391,7 +391,7 @@ fn draw_nearest_crossing(ctx: &EventCtx, app: &App) -> (Drawable, BTreeMap<RoadI
     let mut main_road_ids = BTreeSet::new();
     for r in main_roads(app) {
         main_road_ids.insert(r.id);
-        if app.edits().crossings.contains_key(&r.id) {
+        if !app.per_map.map.get_r(r.id).crossings.is_empty() {
             queue.push(PriorityQueueItem {
                 cost: Duration::ZERO,
                 value: r.id,

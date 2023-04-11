@@ -36,7 +36,7 @@ pub fn handle_world_outcome(
 ) -> EditOutcome {
     match outcome {
         WorldOutcome::ClickedObject(Obj::Road(r)) => {
-            if app.edits().roads.contains_key(&r) {
+            if app.per_map.map.get_r(r).modal_filter.is_some() {
                 return EditOutcome::error(ctx, "A one-way street can't have a filter");
             }
             if app

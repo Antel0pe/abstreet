@@ -36,7 +36,7 @@ pub struct MapEdits {
     pub merge_zones: bool,
 
     /// Derived from commands, kept up to date by update_derived
-    pub changed_roads: BTreeSet<RoadID>,
+    pub original_roads: BTreeMap<RoadID, EditRoad>,
     pub original_intersections: BTreeMap<IntersectionID, EditIntersection>,
     pub changed_routes: BTreeSet<TransitRouteID>,
 
@@ -191,7 +191,7 @@ impl MapEdits {
             commands: Vec::new(),
             merge_zones: true,
 
-            changed_roads: BTreeSet::new(),
+            original_roads: BTreeMap::new(),
             original_intersections: BTreeMap::new(),
             changed_routes: BTreeSet::new(),
         }
@@ -262,14 +262,16 @@ impl MapEdits {
     }
 
     fn update_derived(&mut self, map: &Map) {
-        self.changed_roads.clear();
+        self.original_roads.clear();
         self.original_intersections.clear();
         self.changed_routes.clear();
 
         for cmd in &self.commands {
             match cmd {
-                EditCmd::ChangeRoad { r, .. } => {
-                    self.changed_roads.insert(*r);
+                EditCmd::ChangeRoad { r, ref old, .. } => {
+                    if !self.original_roads.contains_key(r) {
+                        self.original_roads.insert(*r, old.clone());
+                    }
                 }
                 EditCmd::ChangeIntersection { i, ref old, .. } => {
                     if !self.original_intersections.contains_key(i) {
@@ -282,9 +284,8 @@ impl MapEdits {
             }
         }
 
-        self.changed_roads.retain(|r| {
-            map.get_r_edit(*r) != EditRoad::get_orig_from_osm(map.get_r(*r), &map.config)
-        });
+        self.original_roads
+            .retain(|r, orig| map.get_r_edit(*r) != orig.clone());
         self.original_intersections
             .retain(|i, orig| map.get_i_edit(*i) != orig.clone());
         self.changed_routes.retain(|br| {
@@ -295,10 +296,10 @@ impl MapEdits {
 
     /// Assumes update_derived has been called.
     pub fn compress(&mut self, map: &Map) {
-        for r in &self.changed_roads {
+        for (r, old) in &self.original_roads {
             self.commands.push(EditCmd::ChangeRoad {
                 r: *r,
-                old: EditRoad::get_orig_from_osm(map.get_r(*r), &map.config),
+                old: old.clone(),
                 new: map.get_r_edit(*r),
             });
         }
@@ -324,9 +325,8 @@ impl MapEdits {
     pub fn changed_lanes(&self, map: &Map) -> (BTreeSet<LaneID>, BTreeSet<RoadID>) {
         let mut lanes = BTreeSet::new();
         let mut roads = BTreeSet::new();
-        for r in &self.changed_roads {
+        for (r, orig) in &self.original_roads {
             let r = map.get_r(*r);
-            let orig = EditRoad::get_orig_from_osm(r, map.get_config());
             // What exactly changed?
             if r.speed_limit != orig.speed_limit
                 || r.access_restrictions != orig.access_restrictions
