@@ -115,13 +115,17 @@ pub fn handle_world_outcome(
             EditOutcome::UpdateAll
         }
         WorldOutcome::ClickedObject(Obj::Intersection(i)) => {
-            app.per_map.proposals.before_edit();
-            // TODO This returns commands; apply edits
-            DiagonalFilter::cycle_through_alternatives(
-                &app.per_map.map,
-                i,
-                app.session.filter_type,
-            );
+            let mut edits = map.get_edits().clone();
+            edits
+                .commands
+                .extend(DiagonalFilter::cycle_through_alternatives(
+                    &app.per_map.map,
+                    i,
+                    app.session.filter_type,
+                ));
+            app.per_map
+                .map
+                .must_apply_edits(edits, &mut Timer::throwaway());
             redraw_all_filters(ctx, app);
             EditOutcome::UpdateAll
         }

@@ -1,33 +1,7 @@
-use map_model::{EditRoad, MapEdits, RoadID};
+use map_model::EditRoad;
 use widgetry::EventCtx;
 
 use crate::{mut_edits, App};
-
-pub fn modify_road(ctx: &mut EventCtx, app: &mut App, r: RoadID, edits: MapEdits) {
-    ctx.loading_screen("apply edits", |_, timer| {
-        app.per_map.map.must_apply_edits(edits, timer);
-        // We don't need to regenerate_unzoomed_layer for one-ways or speed limits; no widths or
-        // styling has changed
-
-        // See the argument in filters/existing.rs about not recalculating the pathfinder.
-        // We always create it from-scratch when needed.
-    });
-
-    app.per_map.proposals.before_edit();
-
-    let r_edit = app.per_map.map.get_r_edit(r);
-    // Was the road originally like this? Use the original OSM tags to decide.
-    // TODO This'll break in the face of newer osm2streets transformations. But it's the
-    // same problem as EditRoad::get_orig_from_osm -- figure out a bigger solution later.
-    if r_edit == EditRoad::get_orig_from_osm(app.per_map.map.get_r(r), app.per_map.map.get_config())
-    {
-        mut_edits!(app).one_ways.remove(&r);
-    } else {
-        mut_edits!(app).one_ways.insert(r, r_edit);
-    }
-
-    // We don't need to call redraw_all_filters; no icons have changed
-}
 
 pub fn undo_proposal(ctx: &mut EventCtx, app: &mut App) {
     // use before_edit to maybe fork the proposal, but then we need to undo the no-op change it

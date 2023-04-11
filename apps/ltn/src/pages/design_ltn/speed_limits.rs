@@ -5,7 +5,7 @@ use widgetry::{EventCtx, Text, Widget};
 
 use super::{EditOutcome, Obj};
 use crate::render::colors;
-use crate::{logic, App, Neighbourhood};
+use crate::{App, Neighbourhood};
 
 pub fn widget(ctx: &mut EventCtx) -> Widget {
     ColorLegend::categories(
@@ -73,8 +73,9 @@ pub fn handle_world_outcome(
             edits.commands.push(app.per_map.map.edit_road_cmd(r, |new| {
                 new.speed_limit = Speed::miles_per_hour(20.0);
             }));
-
-            logic::map_edits::modify_road(ctx, app, r, edits);
+            ctx.loading_screen("apply edits", |_, timer| {
+                app.per_map.map.must_apply_edits(edits, timer);
+            });
 
             EditOutcome::UpdateAll
         }
