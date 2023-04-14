@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
 
-use abstutil::{PriorityQueueItem, Timer};
+use abstutil::PriorityQueueItem;
 use geom::{Circle, Duration};
 use map_model::{osm, Crossing, CrossingType, Road, RoadID};
 use widgetry::mapspace::{DrawCustomUnzoomedShapes, ObjectID, PerZoom, World, WorldOutcome};
@@ -114,9 +114,7 @@ impl State<App> for Crossings {
                 "undo" => {
                     let mut edits = app.per_map.map.get_edits().clone();
                     edits.commands.pop().unwrap();
-                    app.per_map
-                        .map
-                        .must_apply_edits(edits, &mut Timer::throwaway());
+                    app.apply_edits(edits);
                     crate::redraw_all_filters(ctx, app);
                     self.update(ctx, app);
                 }
@@ -141,7 +139,7 @@ impl State<App> for Crossings {
                     });
                     new.crossings.sort_by_key(|c| c.dist);
                 }));
-                map.must_apply_edits(edits, &mut Timer::throwaway());
+                app.apply_edits(edits);
                 self.update(ctx, app);
             }
             WorldOutcome::ClickedObject(Obj::Crossing(r, idx)) => {
@@ -151,7 +149,7 @@ impl State<App> for Crossings {
                     new.crossings.remove(idx);
                     // We don't need to re-sort
                 }));
-                map.must_apply_edits(edits, &mut Timer::throwaway());
+                app.apply_edits(edits);
                 self.update(ctx, app);
             }
             _ => {}

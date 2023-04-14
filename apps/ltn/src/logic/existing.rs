@@ -9,6 +9,8 @@ use map_model::{osm, Crossing, FilterType, Map, RoadFilter, RoadID};
 /// TODO Maybe do this in the map importer pipeline!
 pub fn transform_existing(map: &mut Map, timer: &mut Timer) {
     let mut edits = map.get_edits().clone();
+    edits.edits_name = "existing LTNs".to_string();
+
     let mut crossings = detect_crossings(map);
 
     for (r, dist) in detect_filters(map) {
@@ -48,6 +50,7 @@ pub fn transform_existing(map: &mut Map, timer: &mut Timer) {
         }));
     }
 
+    // Since these edits are "built-in' to the basemap, do this directly; don't call before_edit
     map.must_apply_edits(edits, timer);
 
     // Do not call map.keep_pathfinder_despite_edits or recalculate_pathfinding_after_edits. We

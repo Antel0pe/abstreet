@@ -75,10 +75,7 @@ pub fn fix_oneway_and_add_filter(ctx: &mut EventCtx, app: &mut App, roads: &[(Ro
                 new.modal_filter = Some(RoadFilter::new_by_user(*dist, app.session.filter_type));
             }));
     }
-    ctx.loading_screen("apply edits", |_, timer| {
-        app.per_map.map.must_apply_edits(edits, timer);
-    });
-
+    app.apply_edits(edits);
     redraw_all_filters(ctx, app);
 }
 
@@ -139,9 +136,7 @@ impl State<App> for ResolveBusGate {
                     new.modal_filter = Some(RoadFilter::new_by_user(dist, FilterType::BusGate));
                 }));
             }
-            ctx.loading_screen("apply edits", |_, timer| {
-                app.per_map.map.must_apply_edits(edits, timer);
-            });
+            app.apply_edits(edits);
             redraw_all_filters(ctx, app);
 
             return Transition::Multi(vec![Transition::Pop, Transition::Recreate]);

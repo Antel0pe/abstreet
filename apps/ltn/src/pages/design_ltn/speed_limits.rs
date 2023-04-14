@@ -58,11 +58,7 @@ pub fn make_world(ctx: &mut EventCtx, app: &App, neighbourhood: &Neighbourhood) 
     world
 }
 
-pub fn handle_world_outcome(
-    ctx: &mut EventCtx,
-    app: &mut App,
-    outcome: WorldOutcome<Obj>,
-) -> EditOutcome {
+pub fn handle_world_outcome(app: &mut App, outcome: WorldOutcome<Obj>) -> EditOutcome {
     match outcome {
         WorldOutcome::ClickedObject(Obj::Road(r)) => {
             if app.per_map.map.get_r(r).speed_limit == Speed::miles_per_hour(20.0) {
@@ -73,9 +69,7 @@ pub fn handle_world_outcome(
             edits.commands.push(app.per_map.map.edit_road_cmd(r, |new| {
                 new.speed_limit = Speed::miles_per_hour(20.0);
             }));
-            ctx.loading_screen("apply edits", |_, timer| {
-                app.per_map.map.must_apply_edits(edits, timer);
-            });
+            app.apply_edits(edits);
 
             EditOutcome::UpdateAll
         }

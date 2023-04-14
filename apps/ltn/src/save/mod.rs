@@ -40,9 +40,7 @@ pub struct Proposal {
 
 impl Proposal {
     fn make_active(self, ctx: &EventCtx, app: &mut App) {
-        app.per_map
-            .map
-            .must_apply_edits(self.edits.clone(), &mut Timer::throwaway());
+        app.apply_edits(self.edits.clone());
         app.per_map.proposals.current_proposal = self;
         crate::redraw_all_filters(ctx, app);
     }
@@ -150,6 +148,33 @@ impl Proposals {
     pub fn clear_all_but_current(&mut self) {
         self.list = vec![None];
         self.current = 0;
+    }
+
+    /// Call before making any changes to fork a copy of the proposal
+    pub fn before_edit(&mut self, edits: &mut MapEdits) {
+        // Fork the proposal or not?
+        if self.current_proposal.unsaved_parent.is_none() {
+            // Fork a new proposal if we're starting from the immutable baseline
+            let from_immutable = self.current == 0;
+            if from_immutable {
+                // We don't need to to sync MapEdits before doing this; this is the immutable,
+                // original edits
+                self.list
+                    .insert(self.current, Some(self.current_proposal.clone()));
+                self.current += 1;
+                assert!(self.list[self.current].is_none());
+            }
+            // Otherwise, just replace the current proposal with something that's clearly edited
+            self.current_proposal.unsaved_parent = Some(edits.edits_name.clone());
+
+            if from_immutable {
+                // There'll be name collision if people start multiple unsaved files, but it
+                // shouldn't cause problems
+                edits.edits_name = "new proposal*".to_string();
+            } else {
+                edits.edits_name = format!("{}*", self.current_proposal.edits.edits_name);
+            }
+        }
     }
 }
 

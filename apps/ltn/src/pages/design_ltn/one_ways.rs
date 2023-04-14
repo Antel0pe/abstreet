@@ -53,9 +53,7 @@ pub fn handle_world_outcome(
             edits.commands.push(app.per_map.map.edit_road_cmd(r, |new| {
                 LaneSpec::toggle_road_direction(&mut new.lanes_ltr, driving_side);
             }));
-            ctx.loading_screen("apply edits", |_, timer| {
-                app.per_map.map.must_apply_edits(edits, timer);
-            });
+            app.apply_edits(edits);
 
             EditOutcome::UpdateAll
         }

@@ -1,4 +1,3 @@
-use abstutil::Timer;
 use map_model::{DiagonalFilter, FilterType, RoadFilter};
 use widgetry::mapspace::{World, WorldOutcome};
 use widgetry::tools::open_browser;
@@ -108,9 +107,7 @@ pub fn handle_world_outcome(
                     new.modal_filter = Some(RoadFilter::new_by_user(distance, filter_type));
                 }));
             }
-            app.per_map
-                .map
-                .must_apply_edits(edits, &mut Timer::throwaway());
+            app.apply_edits(edits);
             redraw_all_filters(ctx, app);
             EditOutcome::UpdateAll
         }
@@ -123,9 +120,7 @@ pub fn handle_world_outcome(
                     i,
                     app.session.filter_type,
                 ));
-            app.per_map
-                .map
-                .must_apply_edits(edits, &mut Timer::throwaway());
+            app.apply_edits(edits);
             redraw_all_filters(ctx, app);
             EditOutcome::UpdateAll
         }

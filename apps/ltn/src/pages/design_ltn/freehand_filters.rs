@@ -1,4 +1,3 @@
-use abstutil::Timer;
 use geom::PolyLine;
 use map_model::{DiagonalFilter, FilterType, RoadFilter};
 use widgetry::EventCtx;
@@ -87,9 +86,7 @@ fn make_filters_along_path(
                 ));
         }
     }
-    app.per_map
-        .map
-        .must_apply_edits(edits, &mut Timer::throwaway());
+    app.apply_edits(edits);
     redraw_all_filters(ctx, app);
 
     if !oneways.is_empty() {

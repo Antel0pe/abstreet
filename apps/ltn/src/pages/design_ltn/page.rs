@@ -205,6 +205,9 @@ impl State<App> for DesignLTN {
                     return Transition::Keep;
                 }
                 EditOutcome::UpdateAll => {
+                    if app.session.manage_proposals {
+                        self.appwide_panel = AppwidePanel::new(ctx, app, Mode::ModifyNeighbourhood);
+                    }
                     self.neighbourhood.edits_changed(&app.per_map.map);
                     self.update(ctx, app);
                     return Transition::Keep;
@@ -221,6 +224,9 @@ impl State<App> for DesignLTN {
                 self.update(ctx, app);
             }
             EditOutcome::UpdateAll => {
+                if app.session.manage_proposals {
+                    self.appwide_panel = AppwidePanel::new(ctx, app, Mode::ModifyNeighbourhood);
+                }
                 self.neighbourhood.edits_changed(&app.per_map.map);
                 self.update(ctx, app);
             }
@@ -507,6 +513,7 @@ fn make_bottom_panel(
             ctx.style()
                 .btn_plain
                 .icon("system/assets/tools/undo.svg")
+                // TODO Basemap edits count in here
                 .disabled(app.per_map.map.get_edits().commands.is_empty())
                 .hotkey(lctrl(Key::Z))
                 .build_widget(ctx, "undo"),

@@ -225,7 +225,7 @@ fn try_to_filter_road(
 }
 
 fn add_filter(app: &mut App, r: RoadID, pct: f64) {
-    let map = &mut app.per_map.map;
+    let map = &app.per_map.map;
     let mut edits = map.get_edits().clone();
     let road = map.get_r(r);
     edits.commands.push(map.edit_road_cmd(r, |new| {
@@ -234,14 +234,14 @@ fn add_filter(app: &mut App, r: RoadID, pct: f64) {
             app.session.filter_type,
         ));
     }));
-    map.must_apply_edits(edits, &mut Timer::throwaway());
+    app.apply_edits(edits);
 }
 
 fn remove_filter(app: &mut App, r: RoadID) {
-    let map = &mut app.per_map.map;
+    let map = &app.per_map.map;
     let mut edits = map.get_edits().clone();
     edits.commands.push(map.edit_road_cmd(r, |new| {
         new.modal_filter = None;
     }));
-    map.must_apply_edits(edits, &mut Timer::throwaway());
+    app.apply_edits(edits);
 }

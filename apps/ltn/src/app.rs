@@ -8,7 +8,7 @@ use map_gui::render::{DrawMap, DrawOptions};
 use map_gui::tools::CameraState;
 use map_gui::tools::DrawSimpleRoadLabels;
 use map_gui::{AppLike, ID};
-use map_model::{osm, CrossingType, FilterType, IntersectionID, Map, RoutingParams};
+use map_model::{osm, CrossingType, FilterType, IntersectionID, Map, MapEdits, RoutingParams};
 use widgetry::tools::URLManager;
 use widgetry::{Canvas, Drawable, EventCtx, GfxCtx, SharedAppState, State, Warper};
 
@@ -288,6 +288,14 @@ impl App {
                 Box::new(|r| r.get_rank() == osm::RoadRank::Local && !r.is_light_rail()),
             ));
         }
+    }
+
+    pub fn apply_edits(&mut self, mut edits: MapEdits) {
+        // This may modify edits_name
+        self.per_map.proposals.before_edit(&mut edits);
+        self.per_map
+            .map
+            .must_apply_edits(edits, &mut Timer::throwaway());
     }
 }
 
