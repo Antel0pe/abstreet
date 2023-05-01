@@ -140,10 +140,9 @@ fn setup_initial_states(
             if crate::save::Proposal::load_from_path(ctx, app, path.clone()).is_some() {
                 panic!("Consultation mode broken; go fix {path} manually");
             }
-            app.per_map.proposals.clear_all_but_current();
             // TODO Kind of a weird hack -- rename this to "existing LTNs" so we can't overwrite
             // it!
-            app.per_map.proposals.current_proposal.edits.edits_name = "existing LTNs".to_string();
+            app.per_map.proposals.force_current_to_basemap();
         }
 
         // Look for the neighbourhood containing one small street
@@ -245,6 +244,6 @@ fn is_driveable(road: &Road, map: &Map) -> bool {
 #[macro_export]
 macro_rules! mut_partitioning {
     ($app:ident) => {
-        $app.per_map.proposals.current_proposal.partitioning
+        $app.per_map.proposals.list[$app.per_map.proposals.current].partitioning
     };
 }

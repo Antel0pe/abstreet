@@ -18,16 +18,14 @@ use crate::{pages, App, Transition};
 pub use share::PROPOSAL_HOST_URL;
 
 pub struct Proposals {
-    // All entries are filled out, except for the current proposal being worked on
-    list: Vec<Option<Proposal>>,
-    current: usize,
-
-    // MapEdits here are NOT current; map.get_edits() is.
-    pub current_proposal: Proposal,
+    // Note MapEdits for the current proposal is NOT up-to-date; map.get_edits() is
+    // TODO Or we could just copy here in apply_edits; would that be simpler?
+    pub list: Vec<Proposal>,
+    pub current: usize,
 }
 
 /// Captures all of the edits somebody makes to a map in the LTN tool.
-/// TODO This should jus tbe MapEdits, but we need to deal with Partitioning still
+/// TODO This should just be MapEdits, but we need to deal with Partitioning still
 /// Note "existing LTNs" is a special reserved name
 #[derive(Clone)]
 pub struct Proposal {
@@ -39,12 +37,6 @@ pub struct Proposal {
 }
 
 impl Proposal {
-    fn make_active(self, ctx: &EventCtx, app: &mut App) {
-        app.apply_edits(self.edits.clone());
-        app.per_map.proposals.current_proposal = self;
-        crate::redraw_all_filters(ctx, app);
-    }
-
     /// Try to load a proposal. If it fails, returns a popup message state.
     pub fn load_from_path(
         ctx: &mut EventCtx,
@@ -87,13 +79,13 @@ impl Proposal {
         // Don't stash it.
         if !app.partitioning().is_empty() {
             stash_current_proposal(app);
-
-            // Start a new proposal
-            app.per_map.proposals.list.push(None);
-            app.per_map.proposals.current = app.per_map.proposals.list.len() - 1;
         }
 
-        proposal.make_active(ctx, app);
+        app.apply_edits(proposal.edits.clone());
+        crate::redraw_all_filters(ctx, app);
+
+        app.per_map.proposals.list.push(proposal);
+        app.per_map.proposals.current = app.per_map.proposals.list.len() - 1;
 
         Ok(())
     }
@@ -118,61 +110,60 @@ impl Proposal {
 
 fn stash_current_proposal(app: &mut App) {
     // We need to sync MapEdits here!
-    app.per_map.proposals.current_proposal.edits = app.per_map.map.get_edits().clone();
+    app.per_map.proposals.list[app.per_map.proposals.current].edits =
+        app.per_map.map.get_edits().clone();
     // TODO And compress?
-
-    // TODO Could we swap and be more efficient?
-    *app.per_map
-        .proposals
-        .list
-        .get_mut(app.per_map.proposals.current)
-        .unwrap() = Some(app.per_map.proposals.current_proposal.clone());
 }
 
 impl Proposals {
     // This calculates partitioning, which is expensive
     pub fn new(map: &Map, timer: &mut Timer) -> Self {
         Self {
-            list: vec![None],
-            current: 0,
-
-            current_proposal: Proposal {
+            list: vec![Proposal {
                 partitioning: Partitioning::seed_using_heuristics(map, timer),
                 edits: map.get_edits().clone(),
                 unsaved_parent: None,
-            },
+            }],
+            current: 0,
         }
     }
 
+    pub fn get_current(&self) -> &Proposal {
+        &self.list[self.current]
+    }
+    pub fn mut_current(&mut self) -> &mut Proposal {
+        &mut self.list[self.current]
+    }
+
     // Special case for locking into a consultation mode
-    pub fn clear_all_but_current(&mut self) {
-        self.list = vec![None];
+    pub fn force_current_to_basemap(&mut self) {
+        let mut current = self.list.remove(self.current);
+        current.edits.edits_name = "existing LTNs".to_string();
+        self.list = vec![current];
         self.current = 0;
     }
 
     /// Call before making any changes to fork a copy of the proposal
     pub fn before_edit(&mut self, edits: &mut MapEdits) {
         // Fork the proposal or not?
-        if self.current_proposal.unsaved_parent.is_none() {
+        if self.get_current().unsaved_parent.is_none() {
             // Fork a new proposal if we're starting from the immutable baseline
             let from_immutable = self.current == 0;
             if from_immutable {
                 // We don't need to to sync MapEdits before doing this; this is the immutable,
                 // original edits
-                self.list
-                    .insert(self.current, Some(self.current_proposal.clone()));
-                self.current += 1;
-                assert!(self.list[self.current].is_none());
+                self.list.insert(1, self.list[0].clone());
+                self.current = 1;
             }
             // Otherwise, just replace the current proposal with something that's clearly edited
-            self.current_proposal.unsaved_parent = Some(edits.edits_name.clone());
+            self.list[self.current].unsaved_parent = Some(edits.edits_name.clone());
 
             if from_immutable {
                 // There'll be name collision if people start multiple unsaved files, but it
                 // shouldn't cause problems
                 edits.edits_name = "new proposal*".to_string();
             } else {
-                edits.edits_name = format!("{}*", self.current_proposal.edits.edits_name);
+                edits.edits_name = format!("{}*", self.get_current().edits.edits_name);
             }
         }
     }

@@ -256,7 +256,7 @@ fn make_left_panel(ctx: &mut EventCtx, app: &App, top_panel: &Panel, mode: Mode)
                 .build_widget(ctx, "hide proposals")
                 .align_right(),
         );
-        col.push(app.per_map.proposals.to_widget_expanded(ctx, app));
+        col.push(app.per_map.proposals.to_widget_expanded(ctx));
     } else {
         col.push(
             ctx.style()

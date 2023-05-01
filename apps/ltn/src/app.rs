@@ -276,7 +276,7 @@ impl App {
     }
 
     pub fn partitioning(&self) -> &Partitioning {
-        &self.per_map.proposals.current_proposal.partitioning
+        &self.per_map.proposals.get_current().partitioning
     }
 
     pub fn calculate_draw_all_local_road_labels(&mut self, ctx: &mut EventCtx) {

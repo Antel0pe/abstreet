@@ -8,9 +8,6 @@ use osm2streets::Direction;
 use crate::{render, App, Neighbourhood};
 
 pub fn geojson_string(app: &App) -> Result<String> {
-    use geo::MapCoordsInPlace;
-    use geojson::{Feature, FeatureCollection, GeoJson, Geometry, Value};
-
     let map = &app.per_map.map;
     let gps_bounds = Some(map.get_gps_bounds());
     let mut features = Vec::new();
